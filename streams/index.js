@@ -3,13 +3,15 @@ const fs = require('fs');
 const server = require('http').createServer();
 
 server.on('request', (req, res) => {
-    // Solution 1, without streams, load all an send the info
+    // Solution 1, without streams, load all the data in memory (variable data in this case) an then send the info
+    // Problems: Too many request to large file will overload your server
     // fs.readFile('../test-file.txt', (error, data) => {
     //     if(error) console.log(error);
     //     res.end(data);
     // })
     
     // Solution 2, with streams, load the file by chunks
+    // Problem: The reading of the file is more faster than the res send, making the backpressure problem
     // const readable = fs.createReadStream('../test-file.txt');
     // // Sending the info by chunks
     // readable.on('data', chunk => {
@@ -28,8 +30,8 @@ server.on('request', (req, res) => {
 
     // Solution 3. solving backpressure
     const readable = fs.createReadStream('../test-file.txt');
-    readable.pipe(res);
-    // readbleSource.pipe(writebleDest)
+    readable.pipe(res); // Generate a fluid connection and automatically handle the speed basically of the backpressure problem.
+    // readbleSource.pipe(writebleDest) This is controll
 });
 
 server.listen(8000, '127.0.0.1', () => {
